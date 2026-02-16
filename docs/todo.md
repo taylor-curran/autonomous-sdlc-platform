@@ -2,9 +2,9 @@
 
 ## Phase 1: Foundation
 
-- [ ] **Set up repo structure** — `.github/workflows/`, scripts dir, config templates
-- [ ] **Create reusable workflow** (`on: workflow_call`) with parameterized inputs (repo, SonarQube project key, etc.)
-- [ ] **Create example caller workflow** — minimal YAML a target repo drops into `.github/workflows/`
+- [x] **Set up repo structure** — `.github/workflows/`, scripts dir, config templates
+- [x] **Create reusable workflow** (`on: workflow_call`) with parameterized inputs (repo, SonarQube project key, etc.)
+- [x] **Create example caller workflow** — minimal YAML a target repo drops into `.github/workflows/`
 
 ## Phase 2: GH Actions Checks (keep minimal)
 

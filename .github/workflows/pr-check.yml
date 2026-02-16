@@ -1,0 +1,10 @@
+# Caller workflow — triggers the reusable workflow on PRs to this repo
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  autonomous-sdlc:
+    uses: ./.github/workflows/autonomous-sdlc.yml

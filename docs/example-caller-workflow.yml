@@ -1,0 +1,10 @@
+# Example caller workflow — drop this into a target repo's .github/workflows/
+name: Autonomous SDLC
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  autonomous-sdlc:
+    uses: taylor-curran/autonomous-sdlc-platform/.github/workflows/autonomous-sdlc.yml@main

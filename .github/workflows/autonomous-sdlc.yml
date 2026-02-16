@@ -1,0 +1,14 @@
+# Autonomous SDLC Pipeline — Reusable Workflow
+name: Autonomous SDLC Pipeline
+
+on:
+  workflow_call:
+
+jobs:
+  hello:
+    name: Hello World
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hello
+        run: echo "Hello from the Autonomous SDLC Pipeline!"
