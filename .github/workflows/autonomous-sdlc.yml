@@ -3,12 +3,33 @@ name: Autonomous SDLC Pipeline
 
 on:
   workflow_call:
+    inputs:
+      sonar_org:
+        description: 'SonarCloud organization key'
+        type: string
+        default: 'taylor-curran'
 
 jobs:
-  hello:
-    name: Hello World
+  sonarcloud:
+    name: SonarCloud Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Hello
-        run: echo "Hello from the Autonomous SDLC Pipeline!"
+        with:
+          fetch-depth: 0  # full history needed for SonarCloud new code detection
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=${{ inputs.sonar_org }}
+            -Dsonar.projectKey=${{ inputs.sonar_org }}_${{ github.event.repository.name }}
+            -Dsonar.host.url=https://sonarcloud.io
+
+      - name: Check Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

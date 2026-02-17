@@ -8,3 +8,4 @@ on:
 jobs:
   autonomous-sdlc:
     uses: taylor-curran/autonomous-sdlc-platform/.github/workflows/autonomous-sdlc.yml@main
+    secrets: inherit

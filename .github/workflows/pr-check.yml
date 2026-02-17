@@ -8,3 +8,4 @@ on:
 jobs:
   autonomous-sdlc:
     uses: ./.github/workflows/autonomous-sdlc.yml
+    secrets: inherit
