@@ -49,7 +49,7 @@ jobs:
           PROJECT_KEY="${{ inputs.sonar_org }}_${{ github.event.repository.name }}"
           REPO="${{ github.repository }}"
 
-          PROMPT="The SonarCloud quality gate failed for project ${PROJECT_KEY} (repo: ${REPO}). Use the SonarCloud MCP to fetch the open issues for this project, prioritized by severity. Fix each issue in its own child session — one targeted PR per issue."
+          PROMPT="The SonarCloud quality gate failed for project ${PROJECT_KEY} (repo: ${REPO}). Use the SonarCloud MCP to fetch the open issues for this project, prioritized by severity. Fix the highest-priority issues and open a PR."
 
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://api.devin.ai/v3beta1/organizations/${DEVIN_ORG_ID}/sessions" \
@@ -61,8 +61,6 @@ jobs:
               --arg title "Fix SonarQube Issues — ${REPO}" \
               '{
                 prompt: $prompt,
-                advanced_mode: "batch",
-                bypass_approval: true,
                 repos: [$repo],
                 title: $title,
                 tags: ["sonarqube", "auto-fix"]
