@@ -40,16 +40,45 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Launch Agent (Fix Issues)
+      - name: Launch Devin (Fix Issues)
         if: steps.quality_gate.outcome == 'failure'
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          DEVIN_API_KEY: ${{ secrets.DEVIN_API_KEY }}
+          DEVIN_ORG_ID: ${{ secrets.DEVIN_ORG_ID }}
         run: |
           PROJECT_KEY="${{ inputs.sonar_org }}_${{ github.event.repository.name }}"
-          echo "🚨 Quality Gate FAILED — launching agent to fix issues"
-          echo ""
-          echo "Project: ${PROJECT_KEY}"
-          echo "Dashboard: https://sonarcloud.io/project/overview?id=${PROJECT_KEY}"
-          echo ""
-          echo "TODO: Call Devin API to create a fix session"
-          echo "(agent work)"
+          REPO="${{ github.repository }}"
+
+          PROMPT="The SonarCloud quality gate failed for project ${PROJECT_KEY} (repo: ${REPO}). Use the SonarCloud MCP to fetch the open issues for this project, prioritized by severity. Fix each issue in its own child session — one targeted PR per issue."
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://api.devin.ai/v3beta1/organizations/${DEVIN_ORG_ID}/sessions" \
+            -H "Authorization: Bearer ${DEVIN_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg prompt "$PROMPT" \
+              --arg repo "$REPO" \
+              --arg title "Fix SonarQube Issues — ${REPO}" \
+              '{
+                prompt: $prompt,
+                advanced_mode: "batch",
+                bypass_approval: true,
+                repos: [$repo],
+                title: $title,
+                tags: ["sonarqube", "auto-fix"]
+              }')")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            SESSION_ID=$(echo "$BODY" | jq -r '.session_id')
+            SESSION_URL=$(echo "$BODY" | jq -r '.url')
+            echo "✅ Devin batch session created"
+            echo "   Session: ${SESSION_ID}"
+            echo "   URL:     ${SESSION_URL}"
+          else
+            echo "❌ Failed to create Devin session (HTTP ${HTTP_CODE})"
+            echo "$BODY"
+            exit 1
+          fi
