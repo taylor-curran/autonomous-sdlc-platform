@@ -32,33 +32,24 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.java.binaries=/tmp/empty-classes
 
-      - name: Fetch Overall Metrics
-        if: always()
+      - name: Check Quality Gate
+        id: quality_gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        timeout-minutes: 5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Launch Agent (Fix Issues)
+        if: steps.quality_gate.outcome == 'failure'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           PROJECT_KEY="${{ inputs.sonar_org }}_${{ github.event.repository.name }}"
-          METRICS="bugs,vulnerabilities,code_smells,security_hotspots,duplicated_lines_density,coverage,ncloc,reliability_rating,security_rating,sqale_rating"
-          RESPONSE=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/measures/component?component=${PROJECT_KEY}&metricKeys=${METRICS}")
-
-          echo "## Overall Project Metrics"
-          echo "$RESPONSE" | jq -r '
-            .component.measures[] |
-            "\(.metric): \(.value)"
-          ' | sort
-
+          echo "🚨 Quality Gate FAILED — launching agent to fix issues"
           echo ""
-          echo "## Quality Gate Status (Overall)"
-          QG=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${PROJECT_KEY}")
-          echo "$QG" | jq -r '.projectStatus.status'
+          echo "Project: ${PROJECT_KEY}"
+          echo "Dashboard: https://sonarcloud.io/project/overview?id=${PROJECT_KEY}"
           echo ""
-          echo "### Conditions:"
-          echo "$QG" | jq -r '.projectStatus.conditions[] | "\(.metricKey): \(.actualValue) (threshold: \(.errorThreshold)) → \(.status)"'
-
-      - name: Check Quality Gate (New Code)
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          echo "TODO: Call Devin API to create a fix session"
+          echo "(agent work)"
