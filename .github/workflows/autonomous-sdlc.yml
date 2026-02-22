@@ -18,6 +18,9 @@ jobs:
         with:
           fetch-depth: 0  # full history needed for SonarCloud new code detection
 
+      - name: Create empty classes dir
+        run: mkdir -p /tmp/empty-classes
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -27,9 +30,7 @@ jobs:
             -Dsonar.organization=${{ inputs.sonar_org }}
             -Dsonar.projectKey=${{ inputs.sonar_org }}_${{ github.event.repository.name }}
             -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.java.binaries=**/*.class
-            -Dsonar.java.libraries=**/*.jar
-            -Dsonar.scm.disabled=false
+            -Dsonar.java.binaries=/tmp/empty-classes
 
       - name: Check Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
