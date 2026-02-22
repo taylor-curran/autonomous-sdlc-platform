@@ -8,14 +8,6 @@ on:
         description: 'SonarCloud organization key'
         type: string
         default: 'taylor-curran'
-      build_command:
-        description: 'Build command to compile code before scanning (e.g. ./gradlew classes -x test)'
-        type: string
-        default: ''
-      java_version:
-        description: 'Java version to use (only needed for Java/Scala projects)'
-        type: string
-        default: ''
 
 jobs:
   sonarcloud:
@@ -26,17 +18,6 @@ jobs:
         with:
           fetch-depth: 0  # full history needed for SonarCloud new code detection
 
-      - name: Set up JDK
-        if: inputs.java_version != ''
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: ${{ inputs.java_version }}
-
-      - name: Build
-        if: inputs.build_command != ''
-        run: ${{ inputs.build_command }}
-
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -46,6 +27,9 @@ jobs:
             -Dsonar.organization=${{ inputs.sonar_org }}
             -Dsonar.projectKey=${{ inputs.sonar_org }}_${{ github.event.repository.name }}
             -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.java.binaries=**/*.class
+            -Dsonar.java.libraries=**/*.jar
+            -Dsonar.scm.disabled=false
 
       - name: Check Quality Gate
         uses: SonarSource/sonarqube-quality-gate-action@v1
