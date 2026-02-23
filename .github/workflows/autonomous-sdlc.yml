@@ -63,7 +63,7 @@ jobs:
                 prompt: $prompt,
                 advanced_mode: "batch",
                 bypass_approval: true,
-                child_playbook_id: "ab9401b86aa0492bb3501f64f22b85f0",
+                child_playbook_id: "playbook-ab9401b86aa0492bb3501f64f22b85f0",
                 repos: [$repo],
                 title: $title,
                 tags: ["sonarqube", "auto-fix"]
